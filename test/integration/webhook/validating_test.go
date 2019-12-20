@@ -67,7 +67,7 @@ func TestValidatingWebhook(t *testing.T) {
 				})
 				vwh, _ := validating.NewWebhook(validating.WebhookConfig{
 					Name: "pod-validating-label",
-					Obj:  &corev1.Pod{},
+					Objs:  []metav1.Object{&corev1.Pod{}},
 				}, val, nil, nil, nil)
 				return vwh
 			},
@@ -105,7 +105,7 @@ func TestValidatingWebhook(t *testing.T) {
 				})
 				vwh, _ := validating.NewWebhook(validating.WebhookConfig{
 					Name: "pod-validating-label",
-					Obj:  &corev1.Pod{},
+					Objs:  []metav1.Object{&corev1.Pod{}},
 				}, val, nil, nil, nil)
 				return vwh
 			},

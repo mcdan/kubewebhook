@@ -58,7 +58,7 @@ func main() {
 
 	mcfg := mutatingwh.WebhookConfig{
 		Name: "podAnnotate",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	wh, err := mutatingwh.NewWebhook(mcfg, mt, nil, nil, logger)
 	if err != nil {

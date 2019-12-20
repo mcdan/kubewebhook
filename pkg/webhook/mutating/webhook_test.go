@@ -123,7 +123,12 @@ func TestPodAdmissionReviewMutation(t *testing.T) {
 			mutator: getPodNSMutator("myChangedNS"),
 			review: &admissionv1beta1.AdmissionReview{
 				Request: &admissionv1beta1.AdmissionRequest{
-					UID: "test",
+					UID:  "test",
+					Kind: metav1.GroupVersionKind{
+						Group:   "",
+						Version: "v1",
+						Kind:    "Pod",
+					},
 					Object: runtime.RawExtension{
 						Raw: getPodJSON(),
 					},
@@ -144,6 +149,11 @@ func TestPodAdmissionReviewMutation(t *testing.T) {
 			review: &admissionv1beta1.AdmissionReview{
 				Request: &admissionv1beta1.AdmissionRequest{
 					UID: "test",
+					Kind: metav1.GroupVersionKind{
+						Group:   "",
+						Version: "v1",
+						Kind:    "Pod",
+					},
 					Object: runtime.RawExtension{
 						Raw: getPodJSON(),
 					},
@@ -161,6 +171,11 @@ func TestPodAdmissionReviewMutation(t *testing.T) {
 			review: &admissionv1beta1.AdmissionReview{
 				Request: &admissionv1beta1.AdmissionRequest{
 					UID: "test",
+					Kind: metav1.GroupVersionKind{
+						Group:   "",
+						Version: "v1",
+						Kind:    "Pod",
+					},
 					Object: runtime.RawExtension{
 						Raw: getPodJSON(),
 					},
@@ -179,7 +194,7 @@ func TestPodAdmissionReviewMutation(t *testing.T) {
 
 			cfg := mutating.WebhookConfig{
 				Name: "test",
-				Obj:  &corev1.Pod{},
+				Objs:  []metav1.Object{&corev1.Pod{}},
 			}
 			wh, err := mutating.NewWebhook(cfg, test.mutator, nil, nil, log.Dummy)
 			assert.NoError(err)
@@ -211,7 +226,7 @@ func BenchmarkPodAdmissionReviewMutation(b *testing.B) {
 
 		cfg := mutating.WebhookConfig{
 			Name: "test",
-			Obj:  &corev1.Pod{},
+			Objs:  []metav1.Object{&corev1.Pod{}},
 		}
 		wh, err := mutating.NewWebhook(cfg, mutator, nil, nil, log.Dummy)
 		assert.NoError(b, err)

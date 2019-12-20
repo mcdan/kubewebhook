@@ -80,7 +80,7 @@ func TestMutatingWebhook(t *testing.T) {
 				})
 				mwh, _ := mutating.NewWebhook(mutating.WebhookConfig{
 					Name: "pod-mutator-label",
-					Obj:  &corev1.Pod{},
+					Objs:  []metav1.Object{&corev1.Pod{}},
 				}, mut, nil, nil, nil)
 				return mwh
 			},
@@ -146,7 +146,7 @@ func TestMutatingWebhook(t *testing.T) {
 				})
 				mwh, _ := mutating.NewWebhook(mutating.WebhookConfig{
 					Name: "pod-mutator-test2",
-					Obj:  &corev1.Pod{},
+					Objs:  []metav1.Object{&corev1.Pod{}},
 				}, mut, nil, nil, nil)
 				return mwh
 			},

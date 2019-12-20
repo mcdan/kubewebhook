@@ -54,6 +54,11 @@ func TestPodAdmissionReviewValidation(t *testing.T) {
 			review: &admissionv1beta1.AdmissionReview{
 				Request: &admissionv1beta1.AdmissionRequest{
 					UID: "test",
+					Kind: metav1.GroupVersionKind{
+						Group:   "",
+						Version: "v1",
+						Kind:    "Pod",
+					},
 					Object: runtime.RawExtension{
 						Raw: getPodJSON(),
 					},
@@ -74,6 +79,11 @@ func TestPodAdmissionReviewValidation(t *testing.T) {
 			review: &admissionv1beta1.AdmissionReview{
 				Request: &admissionv1beta1.AdmissionRequest{
 					UID: "test",
+					Kind: metav1.GroupVersionKind{
+						Group:   "",
+						Version: "v1",
+						Kind:    "Pod",
+					},
 					Object: runtime.RawExtension{
 						Raw: getPodJSON(),
 					},
@@ -96,12 +106,13 @@ func TestPodAdmissionReviewValidation(t *testing.T) {
 
 			// Mocks.
 			mm := &mmetrics.Recorder{}
+			//mm.On("IncAdmissionReviewError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Once()
 			mm.On("IncAdmissionReview", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Once()
 			mm.On("ObserveAdmissionReviewDuration", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Once()
 
 			cfg := validating.WebhookConfig{
 				Name: "test",
-				Obj:  &corev1.Pod{},
+				Objs:  []metav1.Object{&corev1.Pod{}},
 			}
 
 			wh, err := validating.NewWebhook(cfg, test.validator, nil, mm, log.Dummy)
@@ -134,7 +145,7 @@ func BenchmarkPodAdmissionReviewValidation(b *testing.B) {
 
 		cfg := validating.WebhookConfig{
 			Name: "test",
-			Obj:  &corev1.Pod{},
+			Objs:  []metav1.Object{&corev1.Pod{}},
 		}
 
 		wh, _ := validating.NewWebhook(cfg, getRandomValidator(), nil, metrics.Dummy, log.Dummy)

@@ -4,26 +4,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	core_v1 "k8s.io/api/core/v1"
 	"reflect"
 
 	"github.com/appscode/jsonpatch"
 	opentracing "github.com/opentracing/opentracing-go"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-
 	"github.com/slok/kubewebhook/pkg/log"
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/internal/helpers"
 	"github.com/slok/kubewebhook/pkg/webhook/internal/instrumenting"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 // WebhookConfig is the Mutating webhook configuration.
 type WebhookConfig struct {
 	Name string
-	Obj  metav1.Object
+	Objs []metav1.Object
 }
 
 func (c *WebhookConfig) validate() error {
@@ -33,8 +33,8 @@ func (c *WebhookConfig) validate() error {
 		errs = errs + "name can't be empty"
 	}
 
-	if c.Obj == nil {
-		errs = errs + "; obj can't be nil"
+	if len(c.Objs) == 0 {
+		errs = errs + "; objs can't be empty"
 	}
 
 	if errs != "" {
@@ -45,7 +45,7 @@ func (c *WebhookConfig) validate() error {
 }
 
 type staticWebhook struct {
-	objType      reflect.Type
+	typeLookup   map[string]reflect.Type
 	deserializer runtime.Decoder
 	mutator      Mutator
 	cfg          WebhookConfig
@@ -76,12 +76,27 @@ func NewWebhook(cfg WebhookConfig, mutator Mutator, ot opentracing.Tracer, recor
 
 	// Create a custom deserializer for the received admission review request.
 	runtimeScheme := runtime.NewScheme()
+	core_v1.SchemeBuilder.AddToScheme(runtimeScheme)
+
 	codecs := serializer.NewCodecFactory(runtimeScheme)
+	typeMappings := map[string]reflect.Type{}
+	for _, o := range cfg.Objs {
+		r, ok := o.(runtime.Object)
+		if ok {
+			kinds, _, err := runtimeScheme.ObjectKinds(r)
+			if err != nil || len(kinds) == 0{
+				return nil, fmt.Errorf("could not get runtime.Object from %s", o)
+			}
+			typeMappings[kinds[0].String()] = helpers.GetK8sObjType(o)
+		} else {
+			return nil, fmt.Errorf("could not get runtime.Object from %s", o)
+		}
+	}
 
 	// Create our webhook and wrap for instrumentation (metrics and tracing).
 	return &instrumenting.Webhook{
 		Webhook: &staticWebhook{
-			objType:      helpers.GetK8sObjType(cfg.Obj),
+			typeLookup:   typeMappings,
 			deserializer: codecs.UniversalDeserializer(),
 			mutator:      mutator,
 			cfg:          cfg,
@@ -98,7 +113,14 @@ func (w *staticWebhook) Review(ctx context.Context, ar *admissionv1beta1.Admissi
 	auid := ar.Request.UID
 
 	w.logger.Debugf("reviewing request %s, named: %s/%s", auid, ar.Request.Namespace, ar.Request.Name)
-	obj := helpers.NewK8sObj(w.objType)
+
+	targetType := w.typeLookup[ar.Request.Kind.String()]
+	if targetType == nil {
+		err := fmt.Errorf("cannot find admission type in registered object list: %s", targetType)
+		return w.toAdmissionErrorResponse(ar, err)
+	}
+
+	obj := helpers.NewK8sObj(targetType)
 	runtimeObj, ok := obj.(runtime.Object)
 	if !ok {
 		err := fmt.Errorf("could not type assert metav1.Object to runtime.Object")

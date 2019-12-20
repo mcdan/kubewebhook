@@ -50,7 +50,7 @@ func ExampleValidator_ingressHostValidatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := validating.WebhookConfig{
 		Name: "example",
-		Obj:  &extensionsv1beta1.Ingress{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	validating.NewWebhook(cfg, ivh, nil, nil, nil)
 }
@@ -75,7 +75,7 @@ func ExampleValidator_chainValidatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := validating.WebhookConfig{
 		Name: "podWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 
 	validating.NewWebhook(cfg, valChain, nil, nil, nil)
@@ -100,7 +100,7 @@ func ExampleValidator_tracedValidatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := validating.WebhookConfig{
 		Name: "podWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 
 	// Passing a valid tracer  will trace all the reviews handled by the webhook.

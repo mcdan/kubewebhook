@@ -42,7 +42,7 @@ func ExampleMutator_podAnnotateMutatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := mutating.WebhookConfig{
 		Name: "podAnnotateMutatingWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	mutating.NewWebhook(cfg, pam, nil, nil, nil)
 }
@@ -68,7 +68,7 @@ func ExampleMutator_chainMutatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := mutating.WebhookConfig{
 		Name: "podWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 
 	mutating.NewWebhook(cfg, mutChain, nil, nil, nil)
@@ -93,7 +93,7 @@ func ExampleMutator_tracedMutatingWebhook() {
 	// Create webhook (usage of webhook not in this example).
 	cfg := mutating.WebhookConfig{
 		Name: "podWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 
 	// Passing a valid tracer  will trace all the reviews handled by the webhook.

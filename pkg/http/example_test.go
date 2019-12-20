@@ -30,7 +30,7 @@ func ExampleHandlerFor_serveWebhook() {
 	// Create webhook (don't check error).
 	cfg := validating.WebhookConfig{
 		Name: "serveWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	wh, _ := validating.NewWebhook(cfg, v, nil, nil, nil)
 
@@ -61,14 +61,14 @@ func ExampleHandlerFor_serveMultipleWebhooks() {
 	// Create webhooks (don't check error).
 	vcfg := validating.WebhookConfig{
 		Name: "validatingServeWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	vwh, _ := validating.NewWebhook(vcfg, v, nil, nil, nil)
 	vwhHandler, _ := whhttp.HandlerFor(vwh)
 
 	mcfg := mutating.WebhookConfig{
 		Name: "muratingServeWebhook",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 	mwh, _ := mutating.NewWebhook(mcfg, m, nil, nil, nil)
 	mwhHandler, _ := whhttp.HandlerFor(mwh)

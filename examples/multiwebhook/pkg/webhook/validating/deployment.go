@@ -7,6 +7,7 @@ import (
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/validating"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // NewDeploymentWebhook returns a new deployment validationg webhook.
@@ -33,7 +34,7 @@ func NewDeploymentWebhook(minReplicas, maxReplicas int, ot opentracing.Tracer, m
 
 	cfg := validating.WebhookConfig{
 		Name: "multiwebhook-deploymentValidator",
-		Obj:  &extensionsv1beta1.Deployment{},
+		Objs:  []metav1.Object{&extensionsv1beta1.Deployment{}},
 	}
 
 	return validating.NewWebhook(cfg, valChain, ot, mrec, logger)

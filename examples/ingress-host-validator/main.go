@@ -86,7 +86,7 @@ func main() {
 
 	vcfg := validatingwh.WebhookConfig{
 		Name: "ingressHostValidator",
-		Obj:  &extensionsv1beta1.Ingress{},
+		Objs: []metav1.Object{&extensionsv1beta1.Ingress{}},
 	}
 	wh, err := validatingwh.NewWebhook(vcfg, vl, nil, nil, logger)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/mutating"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // NewPodWebhook returns a new pod mutating webhook.
@@ -26,7 +27,7 @@ func NewPodWebhook(labels map[string]string, ot opentracing.Tracer, mrec metrics
 	mc := mutating.NewChain(logger, mutators...)
 	cfg := mutating.WebhookConfig{
 		Name: "multiwebhook-podMutator",
-		Obj:  &corev1.Pod{},
+		Objs:  []metav1.Object{&corev1.Pod{}},
 	}
 
 	return mutating.NewWebhook(cfg, mc, ot, mrec, logger)
