@@ -17,6 +17,10 @@ ARG gid=1000
 RUN addgroup -g $gid app && \
     adduser -D -u $uid -G app app
 
+RUN chown -R app:app /go && \
+    chown -R app:app /src
+
+USER app
 
 # Fill go mod cache.
 RUN mkdir /tmp/cache
@@ -24,9 +28,5 @@ COPY go.mod /tmp/cache
 COPY go.sum /tmp/cache
 RUN cd /tmp/cache && \
     go mod download
-
-RUN chown app:app -R /go && \
-    chown app:app -R /src
-USER app
 
 WORKDIR /src
